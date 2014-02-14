@@ -7,6 +7,9 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -16,8 +19,11 @@ import javax.swing.Timer;
 
 @SuppressWarnings("serial")
 public class GamePanel  extends JPanel{
+	public static final double ACCEL = .5;
+	
 	int timer = 0;
 	Timer mainTimer;
+	List<TestObject> test = new ArrayList<>();;
 //	GameFunctions.BaseGameFunctions bgf;
 	PopupListener popupListener;
 //	IOClass fileStuff;
@@ -31,7 +37,7 @@ public class GamePanel  extends JPanel{
 //		bgf = new GameFunctions.BaseGameFunctions();
 		
 		//creates the popup menu
-//		CreatePopupMenu();
+		CreatePopupMenu();
 		
 		//adds the keyboard listener for keyboard input
 		addKeyListener(new KeyboardListener());
@@ -81,7 +87,11 @@ public class GamePanel  extends JPanel{
 	/**
 	 * Update Method, Action performed calls this to update game
 	 */
-	public void Update(){
+	public void update(){
+		for( int i = 0; i < test.size(); i++){
+			test.get(i).update();
+		}
+			
 //		Tower tempTowerRemove = null;
 //		for(Tower t : towers){
 //			t.Update();
@@ -113,6 +123,10 @@ public class GamePanel  extends JPanel{
 		super.paint(g);
 		Graphics2D g2D = (Graphics2D) g;
 		
+		for( int i = 0; i < test.size(); i++){
+			test.get(i).paintComponent(g);
+		}
+		
 		//draws the map
 //		level.map.Draw(g2D);
 //		
@@ -140,15 +154,22 @@ public class GamePanel  extends JPanel{
 	class TimerListener implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			Update();
+			update();
 			repaint();
 			
-//			if(timer >= 25){
+			if(timer >= 25){
+				timer = 0;
+				Random random = new Random();
+				double t1 = random.nextDouble() * 350;
+				
+				double[] position1 = {t1, 20};
+				TestObject temp = new TestObject(0.0, position1);
+				test.add(temp);
 //				Creep tempCreep = new Creep(1.0, level.map.mapPath, 10.0, 1);
 //				creeps.add(tempCreep);
 //				timer = 0;
-//			}
-//			timer++;
+			}
+			timer++;
 		}
 	}
 	
@@ -192,6 +213,11 @@ public class GamePanel  extends JPanel{
 		public void actionPerformed(ActionEvent arg0) {
 			
 			if(arg0.paramString().contains("Standard")){
+				
+				Point2D t = popupListener.GetPopupLocation();
+				double[] position = {t.getX(), t.getY()};
+				TestObject temp = new TestObject(0.0, position);
+				test.add(temp);
 //				NewTower(ContentBank.TowerType.Standard);
 			}/*
 			if(arg0.paramString().contains("Fire")){
