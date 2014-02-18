@@ -1,5 +1,9 @@
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.MouseInfo;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -9,8 +13,11 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -20,34 +27,22 @@ import javax.swing.Timer;
 @SuppressWarnings("serial")
 public class GamePanel  extends JPanel{
 	public static final double ACCEL = .5;
-	
 	int timer = 0;
 	Timer mainTimer;
-	List<TestObject> test = new ArrayList<>();;
-//	GameFunctions.BaseGameFunctions bgf;
+	public List<AttachmentRod> attachRods = new ArrayList<>();
+	public List<AttachmentPoint> attachPoints = new ArrayList<>();
+	boolean placeRod = true;
+	AttachmentPoint tempPointHead = null;
 	PopupListener popupListener;
-//	IOClass fileStuff;
-//	Player player;
-//	Level level;
 	
 	public GamePanel(){
 		setFocusable(true);
-		
-		//base game functions object declaration
-//		bgf = new GameFunctions.BaseGameFunctions();
 		
 		//creates the popup menu
 		CreatePopupMenu();
 		
 		//adds the keyboard listener for keyboard input
 		addKeyListener(new KeyboardListener());
-		
-		//makes the file io class, and gets the map data
-//		fileStuff = new IOClass();
-//		level = new Level(fileStuff.GetMapAt(1));
-//		map = fileStuff.GetMapAt(1);
-		
-//		player = new Player();
 		
 		//timer for updating game every 10 miliseconds
 		mainTimer = new Timer(10, new TimerListener());
@@ -58,14 +53,14 @@ public class GamePanel  extends JPanel{
 	 * CreatePopupMenu class is only called when the gamePanel is created to instantiate the popup menu
 	 */
 	public void CreatePopupMenu() {
-        JMenuItem menuItem;
-        
-        MenuListener menuListener = new MenuListener();
-        
+		setLayout(new BorderLayout());
+		
         //Create the popup menu.
-        JPopupMenu popup = new JPopupMenu();
-        menuItem = new JMenuItem("Tower:Standard");
+		MenuListener menuListener = new MenuListener();
+        JMenuItem menuItem;
+        menuItem = new JMenuItem("Button Text Here");
         menuItem.addActionListener(menuListener);
+        JPopupMenu popup = new JPopupMenu();
         popup.add(menuItem);
         
         /*
@@ -82,67 +77,58 @@ public class GamePanel  extends JPanel{
         //Add listener to the text area so the popup menu can come up.
         popupListener = new PopupListener(popup);
         this.addMouseListener(popupListener);
+        
+//        JPanel buttonPane = new JPanel();
+//		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
+//		buttonPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
+//        
+//		JButton rodButton = new JButton("Rod");
+//		
+//		buttonPane.add(Box.createHorizontalGlue());
+//		buttonPane.add(rodButton);
+//		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+//		
+//		ButtonListener buttonListener = new ButtonListener(this);
+//		rodButton.addActionListener(buttonListener);
+//		
+//		add(buttonPane, BorderLayout.PAGE_END);
     }
 	
 	/**
 	 * Update Method, Action performed calls this to update game
 	 */
 	public void update(){
-		for( int i = 0; i < test.size(); i++){
-			test.get(i).update();
+		for( int i = 0; i < attachRods.size(); i++){
+			attachRods.get(i).update();
 		}
-			
-//		Tower tempTowerRemove = null;
-//		for(Tower t : towers){
-//			t.Update();
-//			if(!t.isAlive)
-//				tempTowerRemove = t;
-//		}
-//		towers.remove(tempTowerRemove);
-//		
-//		Creep tempCreepRemove = null;
-//		for(Creep c : creeps){
-//			c.Update();
-//			if(!c.isAlive){
-//				if(c.health == 0){
-//					player.money += 1;
-//					player.score += 1;
-//				}else if(c.health > 0){
-//					player.villagers -= 1;
-//				}
-//				tempCreepRemove = c;
-//			}	
-//		}
-//		creeps.remove(tempCreepRemove);
 	}
 	
 	/**
 	 * Paint Method, Action performed repaint to paint the game
 	 */
-	public void paint(Graphics g){
-		super.paint(g);
-		Graphics2D g2D = (Graphics2D) g;
-		
-		for( int i = 0; i < test.size(); i++){
-			test.get(i).paintComponent(g);
-		}
-		
-		//draws the map
-//		level.map.Draw(g2D);
-//		
-//		//goes through the list of towers and calls the draw method
-//		for(int i = 0; i < towers.size(); i++){
-//			towers.get(i).Draw(g);
+	public void paintComponent(Graphics g){
+		super.paintComponent(g);
+//		if(this.isFocusOwner()){
+			for( int i = 0; i < attachRods.size(); i++){
+				attachRods.get(i).paintComponent(g);
+			}
+			
+			for( int i = 0; i < attachPoints.size(); i++){
+				attachPoints.get(i).paintComponent(g);
+			}
+			
+			if(!placeRod){
+				Point mouseLoc = getMouseLocationOnComp();
+				g.drawLine((int)tempPointHead.position[0], (int)tempPointHead.position[1], 
+						mouseLoc.x, mouseLoc.y);
+				g.drawOval(mouseLoc.x - 5, mouseLoc.y - 5, 10, 10);
+			}
 //		}
-//		
-//		//goes throught the list of creeps and calls their draw methods
-//		for(int i = 0; i < creeps.size(); i++){
-//			creeps.get(i).Draw(g);
-//		}
-//		
-//		g.drawString("Money: " + Integer.toString(player.money), 0, 365);
-//		g.drawString("Score: " + Integer.toString(player.score), 125, 365);
-//		g.drawString("Villagers: " + Integer.toString(player.villagers), 250, 365);
+	}
+	
+	private Point getMouseLocationOnComp(){
+		return new Point((int) (MouseInfo.getPointerInfo().getLocation().getX() - this.getLocationOnScreen().getX()), 
+				(int) (MouseInfo.getPointerInfo().getLocation().getY() - this.getLocationOnScreen().getY()));
 	}
 	
 	/**
@@ -157,19 +143,19 @@ public class GamePanel  extends JPanel{
 			update();
 			repaint();
 			
-			if(timer >= 25){
-				timer = 0;
-				Random random = new Random();
-				double t1 = random.nextDouble() * 350;
-				
-				double[] position1 = {t1, 20};
-				TestObject temp = new TestObject(0.0, position1);
-				test.add(temp);
-//				Creep tempCreep = new Creep(1.0, level.map.mapPath, 10.0, 1);
-//				creeps.add(tempCreep);
+//			if(timer >= 25){
 //				timer = 0;
-			}
-			timer++;
+//				Random random = new Random();
+//				double t1 = random.nextDouble() * 350;
+//				
+//				double[] position1 = {t1, 20};
+//				TestObject temp = new TestObject(0.0, position1);
+//				test.add(temp);
+////				Creep tempCreep = new Creep(1.0, level.map.mapPath, 10.0, 1);
+////				creeps.add(tempCreep);
+////				timer = 0;
+//			}
+//			timer++;
 		}
 	}
 	
@@ -213,11 +199,12 @@ public class GamePanel  extends JPanel{
 		public void actionPerformed(ActionEvent arg0) {
 			
 			if(arg0.paramString().contains("Standard")){
+//				
+//				Point2D t = popupListener.GetPopupLocation();
+//				double[] position = {t.getX(), t.getY()};
+//				AttachmentRods temp = new AttachmentRods(0.0, position);
+//				test.add(temp);
 				
-				Point2D t = popupListener.GetPopupLocation();
-				double[] position = {t.getX(), t.getY()};
-				TestObject temp = new TestObject(0.0, position);
-				test.add(temp);
 //				NewTower(ContentBank.TowerType.Standard);
 			}/*
 			if(arg0.paramString().contains("Fire")){
@@ -250,7 +237,30 @@ public class GamePanel  extends JPanel{
 			return location;
 		}
 	    public void mousePressed(MouseEvent e) {
-	    	ShowPopup(e);
+	    	if(e.getButton() == 1){
+	    		if(placeRod){
+	    			placeRod = false;
+	    			Point t1 = getMouseLocationOnComp();
+	    			AttachmentPoint tPoint = GetPoint(t1);
+	    			
+	    			if(tPoint == null){
+	    				double[] t2 = {t1.getX(), t1.getY()};
+		    			tPoint = new AttachmentPoint(.5, t2);
+		    			attachPoints.add(tPoint);
+	    			}
+	    			
+	    			tempPointHead = tPoint;
+	    		}else{
+	    			placeRod = true;
+	    			Point t1 = getMouseLocationOnComp();
+	    			double[] t2 = {t1.getX(), t1.getY()};
+	    			AttachmentPoint tPoint = new AttachmentPoint(.5, t2);
+	    			attachPoints.add(tPoint);
+	    			AttachmentRod tRod = new AttachmentRod(.5, tempPointHead, tPoint);
+	    			attachRods.add(tRod);
+	    			tempPointHead = null;
+	    		}
+	    	}
 	    }
 	    public void mouseReleased(MouseEvent e) {
 	    	ShowPopup(e);
@@ -261,5 +271,48 @@ public class GamePanel  extends JPanel{
 	            location = new Point2D.Double(e.getX(), e.getY());
 	        }
 	    }
+	    public AttachmentPoint GetPoint(Point clickLocation){
+	    	for(int i = 0; i < attachPoints.size(); i++){
+	    		if(GetDistance(clickLocation, new Point((int)attachPoints.get(i).position[0], (int)attachPoints.get(i).position[1])) <= 10){
+	    			return attachPoints.get(i);
+	    		}
+	    	}
+	    	return null;
+	    }
+	    public double GetDistance (Point2D obj1, Point2D obj2){
+			double tempX = obj1.getX() - obj2.getX();
+			double tempY = obj1.getY() - obj2.getY();
+			
+			return Math.sqrt(Math.pow(tempX, 2.0) + Math.pow(tempY, 2.0));
+		}
 	}
+	
+	/**
+	 * MenuListener class, implements ActionListener, this class is used when a menu item is selected,
+	 * clicked or other things
+	 * 
+	 * @author Preston Delano
+	 *
+	 */
+	class ButtonListener implements ActionListener{
+		GamePanel panelRef;
+		
+		public ButtonListener(GamePanel inRef){
+			panelRef = inRef;
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			
+			if(arg0.paramString().contains("Rod")){
+				
+				System.out.println("stuffs");
+				
+				
+				
+			}
+		}
+	}
+	
+	
 }
