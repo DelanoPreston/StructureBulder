@@ -1,6 +1,7 @@
 import java.awt.Graphics;
 
 
+@SuppressWarnings("serial")
 public class AttachmentPoint extends Entity{
 	public double[] position;
 	

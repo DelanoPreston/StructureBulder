@@ -1,7 +1,5 @@
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -10,14 +8,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -38,13 +31,13 @@ public class GamePanel  extends JPanel{
 	public GamePanel(){
 		setFocusable(true);
 		
-		//creates the popup menu
+		//creates the pop up menu
 		CreatePopupMenu();
 		
 		//adds the keyboard listener for keyboard input
 		addKeyListener(new KeyboardListener());
 		
-		//timer for updating game every 10 miliseconds
+		//timer for updating game every 10 milliseconds
 		mainTimer = new Timer(10, new TimerListener());
 		mainTimer.start();
 	}
@@ -62,17 +55,6 @@ public class GamePanel  extends JPanel{
         menuItem.addActionListener(menuListener);
         JPopupMenu popup = new JPopupMenu();
         popup.add(menuItem);
-        
-        /*
-        menuItem = new JMenuItem("Tower:Fire");
-        menuItem.addActionListener(menuListener);
-        popup.add(menuItem);
-        menuItem = new JMenuItem("Tower:Ice");
-        menuItem.addActionListener(menuListener);
-        popup.add(menuItem);
-        menuItem = new JMenuItem("Tower:Poison");
-        menuItem.addActionListener(menuListener);
-        popup.add(menuItem);//*/
  
         //Add listener to the text area so the popup menu can come up.
         popupListener = new PopupListener(popup);
@@ -126,6 +108,10 @@ public class GamePanel  extends JPanel{
 //		}
 	}
 	
+	/**
+	 * gets the mouse location of this component
+	 * @return - point
+	 */
 	private Point getMouseLocationOnComp(){
 		return new Point((int) (MouseInfo.getPointerInfo().getLocation().getX() - this.getLocationOnScreen().getX()), 
 				(int) (MouseInfo.getPointerInfo().getLocation().getY() - this.getLocationOnScreen().getY()));
@@ -195,6 +181,10 @@ public class GamePanel  extends JPanel{
 	 *
 	 */
 	class MenuListener implements ActionListener{
+		
+		/**
+		 * ation performed, required for action listener
+		 */
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			
@@ -228,50 +218,79 @@ public class GamePanel  extends JPanel{
 	 */
 	class PopupListener extends MouseAdapter{
 		JPopupMenu popup;
-		Point2D location = null;
+		Point location = null;
 		
+		/**
+		 * constructor for pop up listener
+		 * @param popupMenu
+		 */
 	    PopupListener(JPopupMenu popupMenu) {
 	        popup = popupMenu;
 	    }
-	    public Point2D GetPopupLocation(){
+	    
+	    /**
+	     * getter for location of the pop up
+	     * @return - point location
+	     */
+	    public Point GetPopupLocation(){
 			return location;
 		}
+	    
+	    /**
+	     * mouse press method
+	     */
 	    public void mousePressed(MouseEvent e) {
+	    	RodLogic(e);
+	    }
+	    
+	    /**
+	     * mouse release method
+	     */
+	    public void mouseReleased(MouseEvent e) {
+	    	ShowPopup(e);
+	    }
+	    
+	    /**
+	     * the logic for placing the rods
+	     */
+	    private void RodLogic(MouseEvent e){
 	    	if(e.getButton() == 1){
+	    		Point t1 = getMouseLocationOnComp();
+    			AttachmentPoint tPoint = GetAttachmentPoint(t1);
+    			if(tPoint == null){
+    				double[] t2 = {t1.getX(), t1.getY()};
+	    			tPoint = new AttachmentPoint(.5, t2);
+	    			attachPoints.add(tPoint);
+    			}
 	    		if(placeRod){
 	    			placeRod = false;
-	    			Point t1 = getMouseLocationOnComp();
-	    			AttachmentPoint tPoint = GetPoint(t1);
-	    			
-	    			if(tPoint == null){
-	    				double[] t2 = {t1.getX(), t1.getY()};
-		    			tPoint = new AttachmentPoint(.5, t2);
-		    			attachPoints.add(tPoint);
-	    			}
-	    			
 	    			tempPointHead = tPoint;
 	    		}else{
 	    			placeRod = true;
-	    			Point t1 = getMouseLocationOnComp();
-	    			double[] t2 = {t1.getX(), t1.getY()};
-	    			AttachmentPoint tPoint = new AttachmentPoint(.5, t2);
-	    			attachPoints.add(tPoint);
 	    			AttachmentRod tRod = new AttachmentRod(.5, tempPointHead, tPoint);
 	    			attachRods.add(tRod);
 	    			tempPointHead = null;
 	    		}
 	    	}
 	    }
-	    public void mouseReleased(MouseEvent e) {
-	    	ShowPopup(e);
-	    }
+	    
+	    /**
+	     * logic for showing the pop up
+	     * @param e - mouse event
+	     */
 	    private void ShowPopup(MouseEvent e) {
 	        if (e.isPopupTrigger()) {
 	            popup.show(e.getComponent(), e.getX(), e.getY());
-	            location = new Point2D.Double(e.getX(), e.getY());
+	            location = new Point(e.getX(), e.getY());
 	        }
 	    }
-	    public AttachmentPoint GetPoint(Point clickLocation){
+	    
+	    /**
+	     * if there is an attachment point close to the click point it will return it
+	     * @param clickLocation - click location
+	     * @return - the attachment point close to the click point, or null
+	     */
+	    private AttachmentPoint GetAttachmentPoint(Point clickLocation){
 	    	for(int i = 0; i < attachPoints.size(); i++){
 	    		if(GetDistance(clickLocation, new Point((int)attachPoints.get(i).position[0], (int)attachPoints.get(i).position[1])) <= 10){
 	    			return attachPoints.get(i);
@@ -279,7 +298,14 @@ public class GamePanel  extends JPanel{
 	    	}
 	    	return null;
 	    }
-	    public double GetDistance (Point2D obj1, Point2D obj2){
+	    
+	    /**
+	     * returns distance in double
+	     * @param obj1 - location of first object
+	     * @param obj2 - location of second object
+	     * @return - the distance in pixels (double)
+	     */
+	    private double GetDistance (Point obj1, Point obj2){
 			double tempX = obj1.getX() - obj2.getX();
 			double tempY = obj1.getY() - obj2.getY();
 			
@@ -297,10 +323,17 @@ public class GamePanel  extends JPanel{
 	class ButtonListener implements ActionListener{
 		GamePanel panelRef;
 		
+		/**
+		 * constructor for button listener
+		 * @param inRef - reference for game panel - not using right now
+		 */
 		public ButtonListener(GamePanel inRef){
 			panelRef = inRef;
 		}
 		
+		/**
+		 * action performed method, required for action listener
+		 */
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			
