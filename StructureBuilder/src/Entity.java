@@ -7,11 +7,17 @@ import javax.swing.JComponent;
 public class Entity extends JComponent{
 	double accel = 0.0;
 	double veloc = 0.0;
-	
 	double mass = 0.0;
+	double[] position;
 	
-	public Entity(double inMass){
+	public Entity(double inMass, double[] inPosition){
 		mass = inMass;
+		position = inPosition;
+	}
+	public Entity(double inMass, double[] inHeadEnd, double[] inTailEnd){
+		mass = inMass;
+		position[0] = Math.abs(inHeadEnd[0] - inTailEnd[0]);
+		position[1] = Math.abs(inHeadEnd[1] - inTailEnd[1]);
 	}
 	
 	public void update(){
